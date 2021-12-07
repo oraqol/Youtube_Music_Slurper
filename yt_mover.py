@@ -1,14 +1,13 @@
 #!/bin/env python
 
-from jsondiff import diff
 from ytmusicapi import YTMusic
-import json
+#import json
 
-yt = YTMusic('/root/headers_auth.json')
+yt = YTMusic('/etc/yt_music/headers_auth.json')
 liked_songs = yt.get_liked_songs(10000000)
 playlists = yt.get_library_playlists(1000000)
 
-with open('/root/yt_sync.config') as f:
+with open('/etc/yt_music/yt_sync.config') as f:
         playlist_name = f.readlines()[0].strip()
 
 playlist_id = None
