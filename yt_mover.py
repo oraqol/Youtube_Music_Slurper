@@ -32,6 +32,8 @@ dupe_ids = []
 for artist in artist_array:
     artist_id = artist['id']
     artist_name = artist['name']
+    if not artist_name == 'Manu Chao':
+        continue
     exists = used_ids.count(artist_id)
     if exists > 0:
         print(f'{artist_name} has already been processed. Skipping...')
@@ -39,6 +41,9 @@ for artist in artist_array:
         continue
     used_ids.append(artist_id)
     print(artist_name)
+#    channel_id = yt.get_artist(artist['id'])
+#    print(channel_id)
+    print(artist['id'])
     try:
         channel_id = yt.get_artist(artist['id'])['channelId']
     except:
@@ -48,9 +53,15 @@ for artist in artist_array:
     try:
         albums = yt.get_artist(channel_id)['albums']['results']
     except:
-        print(f'{artist_name} has no albums. Skipping...')
+        singles = yt.get_artist(channel_id)['singles']['results']
+        for single in singles:
+            single_title = single['title']
+            single_browse_id = single['browseId']
+            print(f'{single_title} : {single_browse_id}')
+#   FIGURE OUT how to target individual songs in web browser instead of playlists,channels. /watch maybe a solution
         continue
-#    for album in yt.get_artist(channel_id)['albums']['results']:
+#        print(f'{artist_name} has no albums. Skipping...')
+#        continue
     for album in yt.get_artist(channel_id)['albums']['results']:
         album_id = album['browseId']
         album_title = album['title']
@@ -65,14 +76,7 @@ for artist in artist_array:
         print(dupe_ids)
         print('-----------------------------------------------------------')
     quit
-#        print(json.dumps(yt.get_album(album_id), indent=4))
-#        for track in yt.get_album(album_id)['tracks']:
-#            print(track)
-#            print(artist_name)
-#            print(album_title)
-#            print(track['videoId'])
-#            print('---------------------')
-liked_song_array = []
+
 for liked_song in liked_songs['tracks']:
     liked_song_id = liked_song['videoId']
     liked_song_array.append(liked_song_id)
