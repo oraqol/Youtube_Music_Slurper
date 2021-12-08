@@ -10,7 +10,7 @@ def downloader(ex_artist, ex_album, ex_url):
     print(f'/homepool/music/discographies/{ex_artist}/{ex_album}')
     if not os.path.exists(f'/homepool/music/discographies/{ex_artist}/{ex_album}'):
         os.makedirs(f'/homepool/music/discographies/{ex_artist}/{ex_album}')
-        subprocess.call(f"/usr/local/bin/youtube-dl --default-search 'ytsearch' -i --yes-playlist --restrict-filenames -R 3 --add-metadata --extract-audio --audio-quality 0 --audio-format mp3 --prefer-ffmpeg --embed-thumbnail -f 'bestaudio' --download-archive /homepool/music/discographies/youtube_dl.archive -o '/homepool/music/discographies/{ex_artist}/{ex_album}/%(title)s - %(artist)s - %(album)s.%(ext)s' {ex_url}", shell=True)
+    subprocess.call(f"/usr/local/bin/youtube-dl --default-search 'ytsearch' -i --yes-playlist --restrict-filenames -R 3 --add-metadata --extract-audio --audio-quality 0 --audio-format mp3 --prefer-ffmpeg --embed-thumbnail -f 'bestaudio' --download-archive /homepool/music/discographies/youtube_dl.archive -o '/homepool/music/discographies/{ex_artist}/{ex_album}/%(title)s - %(artist)s - %(album)s.%(ext)s' {ex_url}", shell=True)
 
 yt = YTMusic('/etc/yt_music/headers_auth.json')
 liked_songs = yt.get_liked_songs(10000000)
@@ -45,7 +45,7 @@ for artist in artist_array:
     print('\n\n----------------------------------------------------------------')
     print(artist_name)
     print('----------------------------------------------------------------')
-#    if not artist_name == 'Night Panda':
+#    if not artist_name == 'Girls Who Care':
 #        continue
     exists = used_ids.count(artist_id)
     if exists > 0:
@@ -60,19 +60,18 @@ for artist in artist_array:
         print(f'{artist_name} has no music in channel. Skipping...')
         continue
 
-#    try:
-    print('\n\nLooping through albums...')
-    albums = artist_cat_info['albums']['results']
-    for album in yt.get_artist(channel_id)['albums']['results']:
-        album_id = album['browseId']
-        album_title = album['title']
-        album_playlist_id = yt.get_album(album_id)['audioPlaylistId']
-        album_url = ''
-        print(f'{album_title} : https://music.youtube.com/playlist?list={album_playlist_id}')
-        downloader(artist_name, album_title, f'https://music.youtube.com/playlist?list={album_playlist_id}')
-#    except:
-#        print('No albums found')
-    quit()
+    try:
+        print('\n\nLooping through albums...')
+        albums = artist_cat_info['albums']['results']
+        for album in yt.get_artist(channel_id)['albums']['results']:
+            album_id = album['browseId']
+            album_title = album['title']
+            album_playlist_id = yt.get_album(album_id)['audioPlaylistId']
+            album_url = ''
+            print(f'{album_title} : https://music.youtube.com/playlist?list={album_playlist_id}')
+            downloader(artist_name, album_title, f'https://music.youtube.com/playlist?list={album_playlist_id}')
+    except:
+        print('No albums found')
     try:
         print('\n\nLooping through singles...')
         singles = yt.get_artist(channel_id)['singles']['results']
@@ -82,6 +81,7 @@ for artist in artist_array:
             singles_list = yt.get_album(single_browse_id)
             single_playlist_id = singles_list['audioPlaylistId']
             print(f'{single_title} : https://music.youtube.com/playlist?list={single_playlist_id}')
+            downloader(artist_name, 'Singles', f'https://music.youtube.com/playlist?list={album_playlist_id}')
     except:
         print('No singles found')
     
@@ -93,6 +93,7 @@ for artist in artist_array:
             song_url = song_details['microformat']['microformatDataRenderer']['urlCanonical']
             song_title = song_details['videoDetails']['title']
             print(f'{song_title} : {song_url}')
+            downloader(artist_name, 'Singles', song_url)
     except:
         print('No individual songs found')
 #    print(json.dumps(artist_cat_info, indent=4))
