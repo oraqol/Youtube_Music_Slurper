@@ -4,9 +4,9 @@ from ytmusicapi import YTMusic
 import json
 import os
 import subprocess
+import time
 
 def downloader(ex_artist, ex_album, ex_url):
-    print('ping!')
     print(f'/homepool/music/discographies/{ex_artist}/{ex_album}')
     if not os.path.exists(f'/homepool/music/discographies/{ex_artist}/{ex_album}'):
         os.makedirs(f'/homepool/music/discographies/{ex_artist}/{ex_album}')
@@ -39,11 +39,15 @@ for public_song in public_songs['tracks']:
 
 used_ids = []
 dupe_ids = []
+total_artists = len(artist_array)
+counter = 0
+
 for artist in artist_array:
+    counter += 1
     artist_id = artist['id']
     artist_name = artist['name']
     print('\n\n----------------------------------------------------------------')
-    print(artist_name)
+    print(f'{artist_name}  {counter}/{total_artists}')
     print('----------------------------------------------------------------')
 #    if not artist_name == 'Girls Who Care':
 #        continue
@@ -68,34 +72,36 @@ for artist in artist_array:
             album_title = album['title']
             album_playlist_id = yt.get_album(album_id)['audioPlaylistId']
             album_url = ''
-            print(f'{album_title} : https://music.youtube.com/playlist?list={album_playlist_id}')
+            print(f'{album_title} {album_id}: https://music.youtube.com/playlist?list={album_playlist_id}')
             downloader(artist_name, album_title, f'https://music.youtube.com/playlist?list={album_playlist_id}')
     except:
         print('No albums found')
-    try:
-        print('\n\nLooping through singles...')
-        singles = yt.get_artist(channel_id)['singles']['results']
-        for single in singles:
-            single_title = single['title']
-            single_browse_id = single['browseId']
-            singles_list = yt.get_album(single_browse_id)
-            single_playlist_id = singles_list['audioPlaylistId']
-            print(f'{single_title} : https://music.youtube.com/playlist?list={single_playlist_id}')
-            downloader(artist_name, 'Singles', f'https://music.youtube.com/playlist?list={album_playlist_id}')
-    except:
-        print('No singles found')
+        continue
+
+ #   try:
+ #       print('\n\nLooping through singles...')
+ #       singles = yt.get_artist(channel_id)['singles']['results']
+ #       for single in singles:
+ #           single_title = single['title']
+ #           single_browse_id = single['browseId']
+ #           singles_list = yt.get_album(single_browse_id)
+ #           single_playlist_id = singles_list['audioPlaylistId']
+ #           print(f'{single_title} : https://music.youtube.com/playlist?list={single_playlist_id}')
+ #           downloader(artist_name, 'Singles', f'https://music.youtube.com/playlist?list={album_playlist_id}')
+ #   except:
+ #       print('No singles found')
     
-    try:
-        print('\n\nLooping through individual songs...')
-        ind_songs = artist_cat_info['songs']['results']
-        for ind_song in ind_songs:
-            song_details = yt.get_song(ind_song['videoId'])
-            song_url = song_details['microformat']['microformatDataRenderer']['urlCanonical']
-            song_title = song_details['videoDetails']['title']
-            print(f'{song_title} : {song_url}')
-            downloader(artist_name, 'Singles', song_url)
-    except:
-        print('No individual songs found')
+ #   try:
+ #       print('\n\nLooping through individual songs...')
+ #       ind_songs = artist_cat_info['songs']['results']
+ #       for ind_song in ind_songs:
+ #           song_details = yt.get_song(ind_song['videoId'])
+ #           song_url = song_details['microformat']['microformatDataRenderer']['urlCanonical']
+ #           song_title = song_details['videoDetails']['title']
+ #           print(f'{song_title} : {song_url}')
+ #           downloader(artist_name, 'Singles', song_url)
+ #   except:
+ #       print('No individual songs found')
 #    print(json.dumps(artist_cat_info, indent=4))
 
 for liked_song in liked_songs['tracks']:
