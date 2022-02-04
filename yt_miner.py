@@ -67,10 +67,16 @@ for artist in artist_array:
     counter += 1
     artist_id = artist['id']
     artist_name = artist['name'].strip()
+    print('\n\n----------------------------------------------------------------')
+    print(f'{artist_name}  {counter}/{total_artists}')
+    print('----------------------------------------------------------------')
+
     if flag == '--refresh-artist-log':
         append_spent_artists(artist_name)
         continue
-#    if not artist_name == 'Blue Öyster Cult':
+    if artist_name in ['Tash Sultana', 'Mix n Blend', 'BOOTS']:
+        continue
+#    if not artist_name == 'Boots':
 #        continue
     elif flag == '--light-scan':
         if artist_name in spent_artists:
@@ -95,45 +101,54 @@ for artist in artist_array:
         append_spent_artists(artist_name)
         continue
 
+    print(artist_cat_info)
     try:
-        print('\n\n----------------------------------------------------------------')
-        print(f'{artist_name}  {counter}/{total_artists}')
-        print('----------------------------------------------------------------')
-        print('\n\nLooping through albums...')
+        albums = yt.get_artist_albums(channel_id, artist_cat_info['albums']['params'])
+    except:
         albums = artist_cat_info['albums']['results']
-        for album in yt.get_artist(channel_id)['albums']['results']:
+    try:
+        singles = artist_cat_info['singles']['results']
+    except:
+        print('No singles. Skipping...')
+    try:
+        ind_songs = artist_cat_info['songs']['results']
+    except:
+        print('No individual songs. Skipping...')
+    
+    print('\n\nLooping through albums...')
+    try:
+        for album in albums:
             album_id = album['browseId']
             album_title = album['title']
             album_playlist_id = yt.get_album(album_id)['audioPlaylistId']
-            album_url = ''
             print(f'{album_title} {album_id}: https://music.youtube.com/playlist?list={album_playlist_id}')
             downloader(artist_name, album_title, f'https://music.youtube.com/playlist?list={album_playlist_id}')
     except:
         print('No albums found')
+
     try:
         print('\n\nLooping through singles...')
-        singles = yt.get_artist(channel_id)['singles']['results']
         for single in singles:
             single_title = single['title']
             single_browse_id = single['browseId']
             singles_list = yt.get_album(single_browse_id)
             single_playlist_id = singles_list['audioPlaylistId']
             print(f'{single_title} : https://music.youtube.com/playlist?list={single_playlist_id}')
-            downloader(artist_name, 'Singles', f'https://music.youtube.com/playlist?list={album_playlist_id}')
+            downloader(artist_name, 'Singles', f'https://music.youtube.com/playlist?list={single_playlist_id}')
     except:
         print('No singles found')
     
-    try:
-        print('\n\nLooping through individual songs...')
-        ind_songs = artist_cat_info['songs']['results']
-        for ind_song in ind_songs:
-            song_details = yt.get_song(ind_song['videoId'])
-            song_url = song_details['microformat']['microformatDataRenderer']['urlCanonical']
-            song_title = song_details['videoDetails']['title']
-            print(f'{song_title} : {song_url}')
-            downloader(artist_name, 'Singles', song_url)
-    except:
-        print('No individual songs found')
+#    try:
+#        print('\n\nLooping through individual songs...')
+            #        ind_songs = artist_cat_info['songs']['results']
+#        for ind_song in ind_songs:
+#            song_details = yt.get_song(ind_song['videoId'])
+#            song_url = song_details['microformat']['microformatDataRenderer']['urlCanonical']
+#            song_title = song_details['videoDetails']['title']
+#            print(f'{song_title} : {song_url}')
+#            downloader(artist_name, 'Singles', song_url)
+#    except:
+#        print('No individual songs found')
     
     append_spent_artists(artist_name)
 
