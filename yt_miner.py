@@ -15,7 +15,7 @@ def downloader(ex_artist, ex_album, ex_url):
     subprocess.call(f"/usr/local/bin/yt-dlp --default-search 'ytsearch' -i --yes-playlist --restrict-filenames -R 3 --add-metadata --extract-audio --audio-quality 0 --audio-format mp3 --prefer-ffmpeg --embed-thumbnail -f 'bestaudio' --download-archive /homepool/music/discographies/youtube_dl.archive -o '/homepool/music/discographies/{ex_artist}/{ex_album}/%(title)s - %(artist)s - %(album)s.%(ext)s' {ex_url}", shell=True)
 #    time.sleep(randint(1,120))
 
-def append_spent_artists(name_of_artist, list_of_spent_artists):
+def append_spent_artists(name_of_artist):
         list_of_spent_artists = open("/etc/yt_music/yt_sync.artist_log", "a")
         list_of_spent_artists.write(f"{name_of_artist}\n")
         list_of_spent_artists.close()
@@ -27,21 +27,17 @@ playlists = yt.get_library_playlists(100000)
 artist_array = []
 liked_song_array = []
 spent_artists = []
+touch.touch('/etc/yt_music/yt_sync.artist_log')
 
 with open('/etc/yt_music/yt_sync.config') as f:
         playlist_name = f.readlines()[0].strip()
 
-if flag == '--full-scan':
-    if os.path.exists('/etc/yt_music/yt_sync.artist_log'):
-        os.remove('/etc/yt_music/yt_sync.artist_log')
-elif flag == '--light-scan':
+#if flag == '--full-scan':
+#    if os.path.exists('/etc/yt_music/yt_sync.artist_log'):
+#        os.remove('/etc/yt_music/yt_sync.artist_log')
+if flag == '--light-scan':
     with open('/etc/yt_music/yt_sync.artist_log') as file:
         spent_artists = [line.rstrip() for line in file]
-else:
-    print('Flag missing: --full-scan or --light-scan')
-    quit()
-
-touch.touch('/etc/yt_music/yt_sync.artist_log')
 
 playlist_id = None
 
@@ -61,6 +57,7 @@ for public_song in public_songs['tracks']:
     public_song_array.append(public_song_id)
     artist_array.append(artist_info)
 
+
 used_ids = []
 dupe_ids = []
 total_artists = len(artist_array)
@@ -70,9 +67,12 @@ for artist in artist_array:
     counter += 1
     artist_id = artist['id']
     artist_name = artist['name'].strip()
+    if flag == '--refresh-artist-log':
+        append_spent_artists(artist_name)
+        continue
 #    if not artist_name == 'Blue Öyster Cult':
 #        continue
-    if flag == '--light-scan':
+    elif flag == '--light-scan':
         if artist_name in spent_artists:
 #        print(f'{artist_name} has already been processed. Skipping...')
             continue
@@ -82,7 +82,7 @@ for artist in artist_array:
     if exists > 0:
         print(f'{artist_name} has already been processed. Skipping...')
         dupe_ids.append([artist_name, artist_id])
-        append_spent_artists(artist_name, spent_artists)
+        append_spent_artists(artist_name)
         continue
 
     used_ids.append(artist_id)
@@ -92,7 +92,7 @@ for artist in artist_array:
         channel_id = artist_cat_info['channelId']
     except:
         print(f'{artist_name} has no music in channel. Skipping...')
-        append_spent_artists(artist_name, spent_artists)
+        append_spent_artists(artist_name)
         continue
 
     try:
@@ -135,6 +135,6 @@ for artist in artist_array:
     except:
         print('No individual songs found')
     
-    append_spent_artists(artist_name, spent_artists)
+    append_spent_artists(artist_name)
 
 #yt.create_playlist("Test_Playlist", "Liked Song playlist duplicate", "PUBLIC", id_array, "")
