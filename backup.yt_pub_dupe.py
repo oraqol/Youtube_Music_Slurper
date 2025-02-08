@@ -6,7 +6,7 @@ import os
 import subprocess
 import time
 
-yt = YTMusic('/etc/yt_music/browser.json')
+yt = YTMusic('/etc/yt_music/oauth.json')
 #yt = YTMusic('/etc/yt_music/headers_auth.json', '104862870707763213449')
 liked_songs = yt.get_liked_songs()
 playlists = yt.get_library_playlists()
@@ -27,7 +27,7 @@ public_song_array = []
 
 public_songs = yt.get_playlist(playlist_id, 100000000)
 for public_song in public_songs['tracks']:
-#    artist_info = public_song['artists'][0]
+    artist_info = public_song['artists'][0]
     public_song_id = public_song['videoId']
     public_song_array.append(public_song_id)
 

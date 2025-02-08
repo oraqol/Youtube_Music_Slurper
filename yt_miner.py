@@ -25,7 +25,7 @@ def append_spent_artists(name_of_artist):
         list_of_spent_artists.close()
 
 flag = sys.argv[1]
-yt = YTMusic('/etc/yt_music/headers_auth.json', '104862870707763213449')
+yt = YTMusic('/etc/yt_music/browser.json')
 liked_songs = yt.get_liked_songs(10000000)
 playlists = yt.get_library_playlists(100000)
 artist_array = []
@@ -53,7 +53,11 @@ public_song_array = []
 public_songs = yt.get_playlist(playlist_id, 100000000)
 
 for public_song in public_songs['tracks']:
-    artist_info = public_song['artists'][0]
+    if public_song['artists'] == None:
+        #artist_info = 'Misc'
+        next
+    else:
+        artist_info = public_song['artists'][0]
     public_song_id = public_song['videoId']
     public_song_array.append(public_song_id)
     artist_array.append(artist_info)
@@ -64,6 +68,7 @@ total_artists = len(artist_array)
 counter = 0
 
 for artist in artist_array:
+    print(artist)
     counter += 1
     artist_id = artist['id']
     artist_name = artist['name'].strip()
@@ -75,8 +80,8 @@ for artist in artist_array:
         continue
 #    if artist_name in ['Tash Sultana', 'Mix n Blend', 'BOOTS']:
 #        continue
-    if not artist_name == 'Chelou':
-        continue
+#    if not artist_name == 'The Killers':
+#        continue
     elif flag == '--light-scan':
         if artist_name in spent_artists:
 #        print(f'{artist_name} has already been processed. Skipping...')
@@ -100,7 +105,7 @@ for artist in artist_array:
         append_spent_artists(artist_name)
         continue
 
-    print(artist_cat_info)
+    #print(artist_cat_info)
 
     try:
         albums = yt.get_artist_albums(channel_id, artist_cat_info['albums']['params'])
@@ -135,6 +140,9 @@ for artist in artist_array:
         for album in albums:
             album_id = album['browseId']
             album_title = album['title']
+            for tracks in yt.get_album(album_id)['tracks']:
+                print(tracks)
+                print("\n\n\n")
             album_playlist_id = yt.get_album(album_id)['audioPlaylistId']
             print(f'{album_title} {album_id}: https://music.youtube.com/playlist?list={album_playlist_id}')
             downloader(artist_name, album_title, f'https://music.youtube.com/playlist?list={album_playlist_id}')
@@ -190,23 +198,25 @@ for artist in artist_array:
 #        print('No individual songs found')
     
     append_spent_artists(artist_name)
+
+for artist in artist_array:
+    artist_name = artist['name'].strip()
+    print(artist_name)
     for filename in glob.iglob(f'/homepool/music/discographies/{artist_name}/**/*mp3', recursive=True):
-        #    print(filename)
-        #    continue
-        #for filename in glob.iglob('/homepool/music/discographies/', recursive=True):
-        #    filename = '/homepool/music/discographies/GHOST DATA/Void Walker/Full_Bodied - GHOST_DATA - Void_Walker.mp3'
-            path_array = filename.split('/')
-            path_artist_name = path_array[4].strip()
-            path_artist_album = path_array[5].strip()
-    #    if not path_artist_name == 'The Offspring':
-    #        continue
+        path_array = filename.split('/')
+        path_artist_name = path_array[4].strip().encode('ascii', 'ignore').decode('ascii')
+        path_artist_album = path_array[5].strip().encode('ascii', 'ignore').decode('ascii')
+        try:
             mp3 = eyed3.load(filename)
             id3_artist_name = mp3.tag.album_artist
-            mp3.tag.album_artist = path_artist_name.encode('ascii', 'ignore').decode('ascii')
-            mp3.tag.artist = path_artist_name.encode('ascii', 'ignore').decode('ascii')
-            mp3.tag.album = path_artist_album.encode('ascii', 'ignore').decode('ascii')
-            mp3.tag.save()
-            print(filename)
-            print(f"Path Artist:{path_artist_name}|ID3 Artist:{id3_artist_name}|Album:{path_artist_album}")
-            print(f"********{mp3.tag.album_artist}***********\n\n\n\n\n")
-        
+            if (mp3.tag.album_artist != path_artist_name) or (mp3.tag.artist != path_artist_name) or (mp3.tag.album != path_artist_album):
+                mp3.tag.album_artist = path_artist_name
+                mp3.tag.artist = path_artist_name
+                mp3.tag.album = path_artist_album
+                mp3.tag.save()
+                print(filename)
+                print(f"Path Artist:{path_artist_name}|ID3 Artist:{id3_artist_name}|Album:{path_artist_album}")
+                print(f"********{mp3.tag.album_artist}***********\n\n\n\n\n")
+        except:
+            print(f"Excption: Path Artist:{path_artist_name}|ID3 Artist:{id3_artist_name}|Album:{path_artist_album}")
+            continue
